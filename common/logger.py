@@ -14,8 +14,8 @@ class Logger(object):
         self.episode_rewards = []
         for _ in range(n_envs):
             self.episode_rewards.append([])
-        self.episode_len_buffer = deque(maxlen = 100)
-        self.episode_reward_buffer = deque(maxlen = 100)
+        self.episode_len_buffer = deque(maxlen = 40)
+        self.episode_reward_buffer = deque(maxlen = 40)
         
         self.log = pd.DataFrame(columns = ['timesteps', 'wall_time', 'num_episodes',
                                'max_episode_rewards', 'mean_episode_rewards','min_episode_rewards',

@@ -17,8 +17,8 @@ class CategoricalPolicy(nn.Module):
         self.embedder = embedder
 
         # small scale weight-initialization in policy enhances the stability        
-        self.fc_policy = orthogonal_init(nn.Linear(self.embedder.output_dim, action_size), gain=0.01)  # checked
-        self.fc_value = orthogonal_init(nn.Linear(self.embedder.output_dim, 1), gain=1.0)  # checked
+        self.fc_policy = orthogonal_init(nn.Linear(self.embedder.output_dim, action_size), gain=0.01)
+        self.fc_value = orthogonal_init(nn.Linear(self.embedder.output_dim, 1), gain=1.0)
 
     def forward(self, x):
         embedding = self.embedder(x)

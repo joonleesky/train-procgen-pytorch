@@ -60,7 +60,7 @@ class PPO(BaseAgent):
 
     def optimize(self):
         pi_loss_list, value_loss_list, entropy_loss_list = [], [], []
-        batch_size = self.n_steps * self.n_envs / self.mini_batch_per_epoch
+        batch_size = self.n_steps * self.n_envs // self.mini_batch_per_epoch
         if batch_size < self.mini_batch_size:
             self.mini_batch_size = batch_size
         grad_accumulation_steps = batch_size / self.mini_batch_size
@@ -119,9 +119,10 @@ class PPO(BaseAgent):
                 next_obs, rew, done, info = self.env.step(act)
                 self.storage.store(obs, act, rew, done, info, log_prob_act, value)
                 obs = next_obs
+            import pdb
+            pdb.set_trace()
             _, _, last_val = self.predict(obs)
             self.storage.store_last(obs, last_val)
-
             # Compute advantage estimates
             self.storage.compute_estimates(self.gamma, self.lmbda, self.use_gae, self.normalize_adv)
 
