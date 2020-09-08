@@ -82,15 +82,21 @@ class Storage():
             adv_batch = torch.FloatTensor(self.adv_batch).reshape(-1)[indices].to(self.device)
             yield obs_batch, act_batch, log_prob_act_batch, value_batch, return_batch, adv_batch
 
-    def fetch_log_data(self, normalize_rew=True):
-        if normalize_rew:
+    def fetch_log_data(self):
+        if 'env_reward' in self.info_batch[0][0]:
             rew_batch = []
             for step in range(self.num_steps):
                 infos = self.info_batch[step]
-                rew_batch.append([info['reward'] for info in infos])
+                rew_batch.append([info['env_reward'] for info in infos])
             rew_batch = np.array(rew_batch)
         else:
             rew_batch = self.rew_batch.numpy()
-        done_batch = self.done_batch.numpy()
-
+        if 'env_done' in self.info_batch[0][0]:
+            done_batch = []
+            for step in range(self.num_steps):
+                infos = self.info_batch[step]
+                done_batch.append([info['env_done'] for info in infos])
+            done_batch = np.array(done_batch)
+        else:
+            done_batch = self.done_batch.numpy()
         return rew_batch, done_batch

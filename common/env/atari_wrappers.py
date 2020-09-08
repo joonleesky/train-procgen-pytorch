@@ -78,6 +78,7 @@ class EpisodicLifeEnv(gym.Wrapper):
             # the environment advertises done.
             done = True
         self.lives = lives
+        info['env_done'] = self.was_real_done
         return obs, reward, done, info
 
     def reset(self, **kwargs):
@@ -99,7 +100,7 @@ class MaxAndSkipEnv(gym.Wrapper):
         gym.Wrapper.__init__(self, env)
         # most recent raw observations (for max pooling across time steps)
         self._obs_buffer = np.zeros((2,)+env.observation_space.shape, dtype=np.uint8)
-        self._skip       = skip
+        self._skip = skip
 
     def step(self, action):
         """Repeat action, sum reward, and max over last observations."""
@@ -128,6 +129,12 @@ class ClipRewardEnv(gym.RewardWrapper):
     def reward(self, reward):
         """Bin reward to {+1, 0, -1} by its sign."""
         return np.sign(reward)
+
+    def step(self, act):
+        """Bin reward to {+1, 0, -1} by its sign."""
+        s, rew, done, info = self.env.step(act)
+        info['env_reward'] = rew
+        return s, rew, done, info
 
 
 class WarpFrame(gym.ObservationWrapper):

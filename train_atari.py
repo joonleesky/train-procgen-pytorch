@@ -85,7 +85,6 @@ if __name__=='__main__':
     observation_space = env.observation_space
     observation_shape = observation_space.shape
     storage = Storage(observation_shape, n_steps, n_envs, device)
-
     ###########
     ## MODEL ##
     ###########

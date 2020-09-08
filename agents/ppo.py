@@ -119,8 +119,6 @@ class PPO(BaseAgent):
                 next_obs, rew, done, info = self.env.step(act)
                 self.storage.store(obs, act, rew, done, info, log_prob_act, value)
                 obs = next_obs
-            import pdb
-            pdb.set_trace()
             _, _, last_val = self.predict(obs)
             self.storage.store_last(obs, last_val)
             # Compute advantage estimates
@@ -130,7 +128,7 @@ class PPO(BaseAgent):
             summary = self.optimize()
             # Log the training-procedure
             self.t += self.n_steps * self.n_envs
-            rew_batch, done_batch = self.storage.fetch_log_data(self.normalize_rew)
+            rew_batch, done_batch = self.storage.fetch_log_data()
             self.logger.feed(rew_batch, done_batch)
             self.logger.write_summary(summary)
             self.logger.dump()

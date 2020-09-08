@@ -36,6 +36,6 @@ if __name__=='__main__':
             cmd.append(value)
         return subprocess.call(cmd)
 
-    pool = Pool(3)
+    pool = Pool(6)
     pool.map(run_experiment, experiments)
     pool.close()
