@@ -9,15 +9,15 @@ This repository contains code to train baseline ppo agent in Procgen implemented
 
 This implementation is inspired to accelerate the research in procgen environment.
 It aims to reproduce the result in Procgen paper.
-Code is designed for both readability and productivity, trying to match [OpenAI baselines's](https://github.com/openai/train-procgen) code as close as possible while following the coding style from [ikostrikov's](https://github.com/ikostrikov/pytorch-a2c-ppo-acktr-gail).  
+Code is designed to satisfy both readability and productivity. I tried to match the code as close as possible to  [OpenAI baselines's](https://github.com/openai/train-procgen) while following the coding style from [ikostrikov's](https://github.com/ikostrikov/pytorch-a2c-ppo-acktr-gail).  
 
-There were several key points to watch out which differ from the general RL implementations
+There were several key points to watch out for procgen, which differ from the general RL implementations
 
 - Xavier uniform initialization was used for conv layers rather than orthogonal initialization.
 - Do not use observation normalization
 - Gradient accumulation to [handle large mini-batch size](https://medium.com/huggingface/training-larger-batches-practical-tips-on-1-gpu-multi-gpu-distributed-setups-ec88c3e51255).
 
-Training logs for `starpilot` can be found on `logs/starpilot`.
+Training logs for `starpilot` can be found on `logs/procgen/starpilot`.
 
 ## Requirements
 
@@ -34,10 +34,10 @@ Use `train.py` to train the agent in procgen environment. It has the following a
 - `--start_level`: Start level for for environment.
 - `--num_levels`: Number of training levels for environment.
 - `--distribution_mode`: Mode of your environ
-- `--param_name`: Configurations name for your training. By default, the training loads hyperparameters from `config.yml/param_name`.
+- `--param_name`: Configurations name for your training. By default, the training loads hyperparameters from `config.yml/procgen/param_name`.
 - `--num_timesteps`: Number of total timesteps to train your agent.
 
-After you start training your agent, log and parameters are automatically stored in `logs/env-name/exp-name/`
+After you start training your agent, log and parameters are automatically stored in `logs/procgen/env-name/exp-name/`
 
 ## Try it out
 
