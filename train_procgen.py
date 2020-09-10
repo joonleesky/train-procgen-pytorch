@@ -19,7 +19,7 @@ if __name__=='__main__':
     parser.add_argument('--start_level',      type=int, default = int(0), help='start-level for environment')
     parser.add_argument('--num_levels',       type=int, default = int(0), help='number of training levels for environment')
     parser.add_argument('--distribution_mode',type=str, default = 'easy', help='distribution mode for environment')
-    parser.add_argument('--param_name',       type=str, default = 'easy', help='hyper-parameter ID')
+    parser.add_argument('--param_name',       type=str, default = 'easy-200', help='hyper-parameter ID')
     parser.add_argument('--device',           type=str, default = 'gpu', required = False, help='whether to use gpu')
     parser.add_argument('--gpu_device',       type=int, default = int(0), required = False, help = 'visible device in CUDA')
     parser.add_argument('--num_timesteps',    type=int, default = int(25000000), help = 'number of training timesteps')
@@ -120,7 +120,8 @@ if __name__=='__main__':
     ## STORAGE ##
     #############
     print('INITIALIZAING STORAGE...')
-    storage = Storage(observation_shape, n_steps, n_envs, device)
+    hidden_state_dim = model.output_dim
+    storage = Storage(observation_shape, hidden_state_dim, n_steps, n_envs, device)
 
     ###########
     ## AGENT ##
