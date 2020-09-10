@@ -324,7 +324,7 @@ class VecNormalize(VecEnvWrapper):
     def step_wait(self):
         obs, rews, news, infos = self.venv.step_wait()
         for i in range(len(infos)):
-            infos[i]['reward'] = rews[i]
+            infos[i]['env_reward'] = rews[i]
         self.ret = self.ret * self.gamma + rews
         obs = self._obfilt(obs)
         if self.ret_rms:

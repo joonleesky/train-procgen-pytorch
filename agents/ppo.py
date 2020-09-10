@@ -49,18 +49,20 @@ class PPO(BaseAgent):
         self.normalize_rew = normalize_rew
         self.use_gae = use_gae
 
-    def predict(self, obs):
+    def predict(self, obs, hidden_state, done):
         with torch.no_grad():
             obs = torch.FloatTensor(obs).to(device=self.device)
-            dist, value = self.policy(obs)
+            hidden_state = torch.FloatTensor(hidden_state).to(device=self.device)
+            mask = torch.FloatTensor(1-done).to(device=self.device)
+            dist, value, hidden_state = self.policy(obs, hidden_state, mask)
             act = dist.sample()
             log_prob_act = dist.log_prob(act)
 
-        return act.cpu().numpy(), log_prob_act.cpu().numpy(), value.cpu().numpy()
+        return act.cpu().numpy(), log_prob_act.cpu().numpy(), value.cpu().numpy(), hidden_state.cpu().numpy()
 
     def optimize(self):
         pi_loss_list, value_loss_list, entropy_loss_list = [], [], []
-        batch_size = self.n_steps * self.n_envs / self.mini_batch_per_epoch
+        batch_size = self.n_steps * self.n_envs // self.mini_batch_per_epoch
         if batch_size < self.mini_batch_size:
             self.mini_batch_size = batch_size
         grad_accumulation_steps = batch_size / self.mini_batch_size
@@ -68,10 +70,14 @@ class PPO(BaseAgent):
 
         self.policy.train()
         for e in range(self.epoch):
-            generator = self.storage.fetch_train_generator(mini_batch_size=self.mini_batch_size)
+            recurrent = self.policy.is_recurrent()
+            generator = self.storage.fetch_train_generator(mini_batch_size=self.mini_batch_size,
+                                                           recurrent=recurrent)
             for sample in generator:
-                obs_batch, act_batch, old_log_prob_act_batch, old_value_batch, return_batch, adv_batch = sample
-                dist_batch, value_batch = self.policy(obs_batch)
+                obs_batch, hidden_state_batch, act_batch, done_batch, \
+                    old_log_prob_act_batch, old_value_batch, return_batch, adv_batch = sample
+                mask_batch = (1-done_batch)
+                dist_batch, value_batch, _ = self.policy(obs_batch, hidden_state_batch, mask_batch)
 
                 # Clipped Surrogate Objective
                 log_prob_act_batch = dist_batch.log_prob(act_batch)
@@ -110,26 +116,28 @@ class PPO(BaseAgent):
         save_every = num_timesteps // self.num_checkpoints
         checkpoint_cnt = 0
         obs = self.env.reset()
+        hidden_state = np.zeros((self.n_envs, self.storage.hidden_state_size))
+        done = np.zeros(self.n_envs)
 
         while self.t < num_timesteps:
             # Run Policy
             self.policy.eval()
             for _ in range(self.n_steps):
-                act, log_prob_act, value = self.predict(obs)
+                act, log_prob_act, value, next_hidden_state = self.predict(obs, hidden_state, done)
                 next_obs, rew, done, info = self.env.step(act)
-                self.storage.store(obs, act, rew, done, info, log_prob_act, value)
+                self.storage.store(obs, hidden_state, act, rew, done, info, log_prob_act, value)
                 obs = next_obs
-            _, _, last_val = self.predict(obs)
-            self.storage.store_last(obs, last_val)
-
+                hidden_state = next_hidden_state
+            _, _, last_val, hidden_state = self.predict(obs, hidden_state, done)
+            self.storage.store_last(obs, hidden_state, last_val)
             # Compute advantage estimates
             self.storage.compute_estimates(self.gamma, self.lmbda, self.use_gae, self.normalize_adv)
 
-            # Optimize policy & value
+            # Optimize policy & valueq
             summary = self.optimize()
             # Log the training-procedure
             self.t += self.n_steps * self.n_envs
-            rew_batch, done_batch = self.storage.fetch_log_data(self.normalize_rew)
+            rew_batch, done_batch = self.storage.fetch_log_data()
             self.logger.feed(rew_batch, done_batch)
             self.logger.write_summary(summary)
             self.logger.dump()

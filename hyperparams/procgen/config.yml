@@ -16,6 +16,7 @@ easy:
     normalize_rew: True
     use_gae: True
     architecture: impala
+    recurrent: False
 
 easy-200:
     algo: ppo
@@ -35,6 +36,7 @@ easy-200:
     normalize_rew: True
     use_gae: True
     architecture: impala
+    recurrent: False
 
 hard:
     algo: ppo
@@ -54,6 +56,7 @@ hard:
     normalize_rew: True
     use_gae: True
     architecture: impala
+    recurrent: False
 
 hard-500:
     algo: ppo
@@ -73,3 +76,4 @@ hard-500:
     normalize_rew: True
     use_gae: True
     architecture: impala
+    recurrent: False
