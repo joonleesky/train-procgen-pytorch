@@ -28,7 +28,7 @@ Training logs for `starpilot` can be found on `logs/starpilot`.
 
 ## Train
 
-Use `train.py` to train the agent in Bubble-Bobble. It has the following arguments:
+Use `train.py` to train the agent in procgen environment. It has the following arguments:
 - `--exp_name`: ID to designate your expriment.s
 - `--env_name`: Name of the Procgen environment.
 - `--start_level`: Start level for for environment.
