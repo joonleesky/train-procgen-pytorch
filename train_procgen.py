@@ -25,7 +25,7 @@ if __name__=='__main__':
     parser.add_argument('--num_timesteps',    type=int, default = int(25000000), help = 'number of training timesteps')
     parser.add_argument('--seed',             type=int, default = random.randint(0,9999), help='Random generator seed')
     parser.add_argument('--log_level',        type=int, default = int(40), help='[10,20,30,40]')
-    parser.add_argument('--num_checkpoints',  type=int, default = int(10), help='number of checkpoints to store')
+    parser.add_argument('--num_checkpoints',  type=int, default = int(1), help='number of checkpoints to store')
 
     args = parser.parse_args()
     exp_name = args.exp_name
@@ -84,24 +84,19 @@ if __name__=='__main__':
     ## LOGGER ##
     ############
     print('INITIALIZAING LOGGER...')
-    logdir = env_name + '/' + exp_name + '/' + 'seed' + '_' + str(seed) + '_' + time.strftime("%d-%m-%Y_%H-%M-%S")
+    logdir = 'procgen/' + env_name + '/' + exp_name + '/' + 'seed' + '_' + \
+             str(seed) + '_' + time.strftime("%d-%m-%Y_%H-%M-%S")
     logdir = os.path.join('logs', logdir)
     if not (os.path.exists(logdir)):
         os.makedirs(logdir)
     logger = Logger(n_envs, logdir)
 
-    #############
-    ## STORAGE ##
-    #############
-    print('INITIALIZAING STORAGE...')
-    observation_space = env.observation_space
-    observation_shape = observation_space.shape
-    storage = Storage(observation_shape, n_steps, n_envs, device)
-
     ###########
     ## MODEL ##
     ###########
     print('INTIALIZING MODEL...')
+    observation_space = env.observation_space
+    observation_shape = observation_space.shape
     architecture = hyperparameters.get('architecture', 'impala')
     in_channels = observation_shape[0]
     action_space = env.action_space
@@ -113,12 +108,19 @@ if __name__=='__main__':
         model = ImpalaModel(in_channels=in_channels)
 
     # Discrete action space
+    recurrent = hyperparameters.get('recurrent', False)
     if isinstance(action_space, gym.spaces.Discrete):
         action_size = action_space.n
-        policy = CategoricalPolicy(model, action_size)
+        policy = CategoricalPolicy(model, recurrent, action_size)
     else:
         raise NotImplementedError
     policy.to(device)
+
+    #############
+    ## STORAGE ##
+    #############
+    print('INITIALIZAING STORAGE...')
+    storage = Storage(observation_shape, n_steps, n_envs, device)
 
     ###########
     ## AGENT ##
